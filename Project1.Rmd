@@ -1,0 +1,139 @@
+---
+title: "Project 1"
+author: "Jason Lu"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+------------------------------------------------------------------------
+
+![](/Users/jasonlu/Documents/SDS%20313/skyscraper.png) Photo by Istvan Kadar 
+Photography. Image courtesy of Getty.
+
+# **Introduction**
+This dataset includes statistics about skyscrapers in the US.
+
+Variables include the name, the city, the materials used, the height (in meters), and more.
+
+The data was sourced from the [Council on Tall Buildings and Urban Habitat](https://www.ctbuh.org/) (formerly known as The Skyscraper Center).
+
+In this report, we will be investigating three predictor variables (material, 
+floors, and height) and their relationship to the outcome variable (years to 
+build a skyscraper).
+
+# **Distribution and Statistics of Years to Build a Skyscraper**
+```{r echo = FALSE}
+skyscraper <- read.csv("Project1_skyscrapers.csv")
+```
+
+```{r echo = FALSE}
+boxplot(skyscraper$YearsToBuild, horizontal = TRUE, 
+        main = "Boxplot of Years to Build a Skyscraper", xlab = "Years")
+
+hist(skyscraper$YearsToBuild, breaks = 20, main = "Histogram of Years to Build a Skyscraper",
+     xlab = "Years")
+```
+
+As we can see from the boxplot and histogram, the distribution of the years it 
+took to build a skyscraper is heavily skewed right with a five-number summary 
+of `r fivenum(skyscraper$YearsToBuild)` (minimum, lower quartile, median, upper 
+quartile, and maximum respectively).
+
+# **Relationships between Predictor Variables and Outcome Variable**
+For each predictor variable, we will create a relevant graph that shows its 
+relationship with the outcome variable and calculate any relevant bivariate 
+statistics.
+
+### **1. Material Used to Build Each Skyscraper**
+```{r echo = FALSE}
+library(ggplot2)
+
+ssplot <- ggplot(skyscraper)
+
+ssplot + geom_boxplot(aes(x = YearsToBuild, y = Material)) + 
+  labs(title = "Boxplots of Years to Build a Skyscraper by Material", 
+       x = "Years")
+```
+
+From the boxplots, it appears that the skyscrapers built from steel, concrete, 
+and composite material have a significant amount of outliers when compared to 
+that of skyscapers built with masonry and concrete/steel.
+
+This may suggest that the mean of years it took for skyscapers to be built from 
+steel, concrete and composite material could potentially be higher than that of 
+skyscapers built with masonry, and concrete/steel materials.
+
+```{r echo = FALSE}
+library(kableExtra)
+
+materialAggregate <- aggregate(YearsToBuild~Material, data = skyscraper, 
+                               FUN = median)
+materialAggregate$MeanYearsToBuild <- round(c(
+  mean(skyscraper$YearsToBuild[skyscraper$Material == "steel"]),
+  mean(skyscraper$YearsToBuild[skyscraper$Material == "masonry"]),
+  mean(skyscraper$YearsToBuild[skyscraper$Material == "concrete/steel"]),
+  mean(skyscraper$YearsToBuild[skyscraper$Material == "concrete"]),
+  mean(skyscraper$YearsToBuild[skyscraper$Material == "composite"])
+), 2)
+
+kbl(materialAggregate, col.names = 
+      c("Materials", "Median of Years to Build Skyscraper", 
+        "Mean of Years to Build Skyscraper")) %>% kable_styling()
+```
+
+However, when looking at the table, we can see that there is a minimal spread between both the median and mean. The median only differs by `r max(materialAggregate$YearsToBuild) - min(materialAggregate$YearsToBuild)` and the mean only differs by a max of `r max(materialAggregate$MeanYearsToBuild) - min(materialAggregate$MeanYearsToBuild)`.
+
+From this, we can most likely conclude that the material has no effect on the number of years it takes for a skyscraper to be built.
+
+### **2. Floors of Each Skyscraper Built**
+```{r echo = FALSE}
+plot(skyscraper$YearsToBuild, skyscraper$Floors, 
+     main = "Years to Build a Skyscraper & Number of Floors", 
+     xlab = "Years", ylab = "Floors", pch = 20)
+```
+
+From the graph, we can see a majority of plots plotted within 1-4 on the x-axis
+and about 5-60 on the y-axis, making it hard to see a line of best fit. The 
+correlation of the scatterplot, `r round(cor(skyscraper$YearsToBuild, 
+skyscraper$Floors), 2)`, is positive, but also very weak.
+
+From this, we can most likely conclude that the number of floors on skyscraper
+has no effect on the number of years it takes for a skyscraper to be built.
+
+### **3. Height of Each Skyscraper Built (in meters)**
+```{r echo = FALSE}
+plot(skyscraper$YearsToBuild, skyscraper$Height,  
+     main = "Years to Build a Skyscraper & Height", 
+     xlab = "Years", ylab = "Height (in meters)", pch = 20)
+```
+
+Compared to the last scatterplot, this one seems to show a stronger correlation 
+than that between years and number of floors. However, similarly to the last 
+one, the outliers make it difficult to make out a line of best fit. Although 
+the correlation of `r round(cor(skyscraper$YearsToBuild, skyscraper$Height), 2)`
+is stronger than that between years and number of floors, it is still quite too
+weak to establish a strong correlation between the two variables.
+
+# **Conclusion**
+Although it is reasonable to believe that the three separate variables 
+(material, number of floors, and height) would have some sort of effect on the
+years it would take for a skyscraper to be built, we have found that there is
+not strong enough evidence to conclude that.
+
+### **Main Takeaways:**
+1. Material used: Difference in both mean and median are too small to be 
+considered significant.
+
+2. Number of floors: Correlation is too weak to be considered significant.
+
+3. Height (in meters): Correlation is too weak to be considered significant.
+
+### **Suggestions for Future Research**
+Some other areas to explore that could effect the time it takes to build a skyscraper could include: construction company, total cost of project,
+climate, total number of workers, etc. 
+
+***
+
+Dataset sourced from 
+[here](https://corgis-edu.github.io/corgis/csv/skyscrapers/).
